@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Todo List</title>
+</head>
+<body>
+    <h1>My Todo List</h1>
+    <a href="/users/logout">Logout</a>
+    
+    <h3>Add New Task</h3>
+    <input type="text" id="taskTitle" placeholder="Enter task...">
+    <button onclick="addTask()">Add</button>
+    
+    <h3>Tasks</h3>
+    <ul id="todoList"></ul>
+    
+    <script>
+        window.onload = function() {
+            loadTasks();
+        }
+        
+        function loadTasks() {
+            fetch('/users/todos', {
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+                .then(response => {
+                    // Check for authentication error
+                    if (response.status === 401) {
+                        window.location.href = '/auth/login';
+                        return;
+                    }
+                    // Check if we got redirected to login (HTML response)
+                    const contentType = response.headers.get('content-type');
+                    if (contentType && contentType.includes('text/html')) {
+                        // We got redirected to login page
+                        window.location.href = '/auth/login';
+                        return;
+                    }
+                    return response.json();
+                })
+                .then(tasks => {
+                    if (!tasks) return; // Handle redirect case
+                    const todoList = document.getElementById('todoList');
+                    todoList.innerHTML = '';
+                    
+                    tasks.forEach(task => {
+                        const li = document.createElement('li');
+                        if (task.status === 'completed') {
+                            li.style.textDecoration = 'line-through';
+                        }
+                        
+                        li.innerHTML = `
+                            ${task.title} 
+                            <button onclick="toggleTask('${task.id}', '${task.status}')">
+                                ${task.status === 'completed' ? 'Undo' : 'Done'}
+                            </button>
+                            <button onclick="deleteTask('${task.id}')">Delete</button>
+                        `;
+                        
+                        todoList.appendChild(li);
+                    });
+                });
+        }
+        
+        function addTask() {
+            const title = document.getElementById('taskTitle').value.trim();
+            if (!title) {
+                alert('Please enter a task');
+                return;
+            }
+            
+            
+            fetch('/users/todos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: `title=${encodeURIComponent(title)}`
+            })
+            .then(response => {
+                
+                // Check for authentication error
+                if (response.status === 401) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                // Check if we got redirected to login (HTML response)
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    // We got redirected to login page
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(task => {
+                document.getElementById('taskTitle').value = '';
+                loadTasks();
+            })
+            .catch(error => {
+                console.error('Error adding task:', error);
+                alert('Error adding task: ' + error.message);
+            });
+        }
+        
+        function toggleTask(taskId, currentStatus) {
+            const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
+            
+            fetch(`/users/todos/${taskId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Accept': 'application/json'
+                },
+                body: `status=${newStatus}`
+            })
+            .then(response => {
+                // Check for authentication error
+                if (response.status === 401) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                // Check if we got redirected to login (HTML response)
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                return response.json();
+            })
+            .then(task => {
+                if (task) loadTasks();
+            })
+            .catch(error => {
+                console.error('Error updating task:', error);
+            });
+        }
+        
+        function deleteTask(taskId) {
+            fetch(`/users/todos/${taskId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => {
+                // Check for authentication error
+                if (response.status === 401) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                // Check if we got redirected to login (HTML response)
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('text/html')) {
+                    window.location.href = '/auth/login';
+                    return;
+                }
+                
+                return response.json();
+            })
+            .then(result => {
+                if (result) loadTasks();
+            })
+            .catch(error => {
+                console.error('Error deleting task:', error);
+            });
+        }
+        
+        document.getElementById('taskTitle').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addTask();
+            }
+        });
+    </script>
+</body>
+</html>
