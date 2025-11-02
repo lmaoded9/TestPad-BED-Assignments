@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLM Member Join</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 600px;
+      padding: 0 16px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #ccc;
+      padding: 24px;
+      border-radius: 8px;
+    }
+    label {
+      font-weight: 600;
+    }
+    input, select {
+      padding: 8px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+    }
+    .success {
+      background-color: #e6ffed;
+      border: 1px solid #79d18a;
+      color: #1f7a36;
+    }
+    .error {
+      background-color: #ffe6e6;
+      border: 1px solid #ff6b6b;
+      color: #a94442;
+    }
+    .links {
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Member Joining Form</h1>
+  <form id="joinForm">
+    <div>
+      <label for="name">Name</label>
+      <input type="text" id="name" name="name" required />
+    </div>
+    <div>
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required />
+    </div>
+    <div>
+      <label for="mobile">Mobile</label>
+      <input type="tel" id="mobile" name="mobile" required />
+    </div>
+    <div>
+      <label for="sponsorCode">Sponsor Code</label>
+      <input type="text" id="sponsorCode" name="sponsorCode" value="ROOT" required />
+    </div>
+    <div>
+      <label for="position">Position</label>
+      <select id="position" name="position" required>
+        <option value="LEFT">Left</option>
+        <option value="RIGHT">Right</option>
+      </select>
+    </div>
+    <button type="submit">Join</button>
+  </form>
+  <div id="message" class="message" style="display: none;"></div>
+
+  <div class="links">
+    <a href="/login.html">Already a member? Login</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('joinForm');
+    const messageEl = document.getElementById('message');
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message ${type}`;
+      messageEl.style.display = 'block';
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      messageEl.style.display = 'none';
+
+      const formData = new FormData(form);
+      const payload = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        mobile: formData.get('mobile'),
+        sponsorCode: formData.get('sponsorCode'),
+        position: formData.get('position'),
+      };
+
+      try {
+        const response = await fetch('/members/join', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to create member');
+        }
+
+        showMessage(
+          `Success! Member Code: ${data.memberCode}. Placed under: ${data.placedUnder} (${data.position}).`,
+          'success'
+        );
+        form.reset();
+        document.getElementById('sponsorCode').value = 'ROOT';
+      } catch (error) {
+        showMessage(error.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
