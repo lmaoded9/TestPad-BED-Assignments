@@ -1,0 +1,58 @@
+{
+  "ROOT": {
+    "memberCode": "ROOT",
+    "name": "Root Member",
+    "email": "root@example.com",
+    "mobile": "0000000000",
+    "sponsorCode": null,
+    "positionFromSponsor": null,
+    "leftMemberCode": "M00001",
+    "rightMemberCode": null,
+    "leftCount": 3,
+    "rightCount": 0,
+    "createdAt": "2025-11-02T00:00:00.000Z",
+    "updatedAt": "2025-11-02T08:38:34.858Z"
+  },
+  "M00001": {
+    "memberCode": "M00001",
+    "name": "Hero Yamada",
+    "email": "heroyamada1@gmail.com",
+    "mobile": "9803849230",
+    "sponsorCode": "ROOT",
+    "positionFromSponsor": "LEFT",
+    "leftMemberCode": "M00002",
+    "rightMemberCode": null,
+    "leftCount": 2,
+    "rightCount": 0,
+    "createdAt": "2025-11-02T08:34:16.310Z",
+    "updatedAt": "2025-11-02T08:38:34.858Z"
+  },
+  "M00002": {
+    "memberCode": "M00002",
+    "name": "Jin Sakai",
+    "email": "jinS@gmail.com",
+    "mobile": "7",
+    "sponsorCode": "M00001",
+    "positionFromSponsor": "LEFT",
+    "leftMemberCode": "M00003",
+    "rightMemberCode": null,
+    "leftCount": 1,
+    "rightCount": 0,
+    "createdAt": "2025-11-02T08:36:58.293Z",
+    "updatedAt": "2025-11-02T08:38:34.858Z"
+  },
+  "M00003": {
+    "memberCode": "M00003",
+    "name": "Christian",
+    "email": "chris@gmail.com",
+    "mobile": "1",
+    "sponsorCode": "M00002",
+    "positionFromSponsor": "LEFT",
+    "leftMemberCode": null,
+    "rightMemberCode": null,
+    "leftCount": 0,
+    "rightCount": 0,
+    "createdAt": "2025-11-02T08:38:34.858Z",
+    "updatedAt": "2025-11-02T08:38:34.858Z"
+  }
+}

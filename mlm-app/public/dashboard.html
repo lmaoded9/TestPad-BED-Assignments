@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLM Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 720px;
+      padding: 0 16px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    section {
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    h2 {
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    .counts {
+      display: flex;
+      gap: 16px;
+    }
+    .counts div {
+      flex: 1;
+      background: #f5f5f5;
+      border-radius: 6px;
+      padding: 12px;
+      text-align: center;
+      font-weight: bold;
+    }
+    button {
+      padding: 8px 16px;
+      cursor: pointer;
+    }
+    .error {
+      color: #b10000;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Dashboard</h1>
+      <p id="welcome"></p>
+    </div>
+    <form id="logoutForm">
+      <button type="submit">Logout</button>
+    </form>
+  </header>
+
+  <section>
+    <h2>Profile</h2>
+    <div id="profile"></div>
+  </section>
+
+  <section>
+    <h2>Downline Summary</h2>
+    <div class="counts">
+      <div>
+        Left Total
+        <div id="leftTotal">-</div>
+      </div>
+      <div>
+        Right Total
+        <div id="rightTotal">-</div>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Side</th>
+          <th>Member Code</th>
+          <th>Name</th>
+          <th>Left Count</th>
+          <th>Right Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Left</td>
+          <td id="leftCode">-</td>
+          <td id="leftName">-</td>
+          <td id="leftLeft">-</td>
+          <td id="leftRight">-</td>
+        </tr>
+        <tr>
+          <td>Right</td>
+          <td id="rightCode">-</td>
+          <td id="rightName">-</td>
+          <td id="rightLeft">-</td>
+          <td id="rightRight">-</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <div id="error" class="error"></div>
+
+  <script>
+    async function fetchJson(url) {
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (response.status === 401) {
+        window.location.href = '/login.html';
+        return null;
+      }
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed');
+      }
+      return data;
+    }
+
+    function renderProfile(profile) {
+      document.getElementById('welcome').textContent = `Welcome, ${profile.name} (${profile.memberCode})`;
+      const sponsor = profile.sponsorCode || 'None';
+      const position = profile.positionFromSponsor || 'Root';
+      document.getElementById('profile').innerHTML = `
+        <strong>Name:</strong> ${profile.name}<br />
+        <strong>Email:</strong> ${profile.email}<br />
+        <strong>Mobile:</strong> ${profile.mobile}<br />
+        <strong>Sponsor:</strong> ${sponsor}<br />
+        <strong>Position:</strong> ${position}<br />
+        <strong>Joined:</strong> ${new Date(profile.createdAt).toLocaleString()}<br />
+      `;
+    }
+
+    function renderDownline(downline) {
+      document.getElementById('leftTotal').textContent = downline.totals.leftCount;
+      document.getElementById('rightTotal').textContent = downline.totals.rightCount;
+
+      const left = downline.left;
+      document.getElementById('leftCode').textContent = left ? left.memberCode : '-';
+      document.getElementById('leftName').textContent = left ? left.name : '-';
+      document.getElementById('leftLeft').textContent = left ? left.leftCount : '-';
+      document.getElementById('leftRight').textContent = left ? left.rightCount : '-';
+
+      const right = downline.right;
+      document.getElementById('rightCode').textContent = right ? right.memberCode : '-';
+      document.getElementById('rightName').textContent = right ? right.name : '-';
+      document.getElementById('rightLeft').textContent = right ? right.leftCount : '-';
+      document.getElementById('rightRight').textContent = right ? right.rightCount : '-';
+    }
+
+    async function loadData() {
+      try {
+        const [profile, downline] = await Promise.all([
+          fetchJson('/members/profile'),
+          fetchJson('/members/downline'),
+        ]);
+
+        if (!profile || !downline) {
+          return;
+        }
+
+        renderProfile(profile);
+        renderDownline(downline);
+      } catch (error) {
+        document.getElementById('error').textContent = error.message;
+      }
+    }
+
+    document.getElementById('logoutForm').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      await fetch('/auth/logout', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+      });
+      window.location.href = '/login.html';
+    });
+
+    loadData();
+  </script>
+</body>
+</html>

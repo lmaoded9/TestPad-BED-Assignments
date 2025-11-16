@@ -1,0 +1,4 @@
+{
+  "ignore": ["tasks.json", "users.json"],
+  "ext": "js,html"
+}

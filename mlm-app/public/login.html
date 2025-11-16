@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MLM Login</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px auto;
+      max-width: 420px;
+      padding: 0 16px;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #ccc;
+      padding: 24px;
+      border-radius: 8px;
+    }
+    label {
+      font-weight: 600;
+    }
+    input {
+      padding: 8px;
+      font-size: 1rem;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .message {
+      margin-top: 16px;
+      padding: 12px;
+      border-radius: 6px;
+      display: none;
+    }
+    .success {
+      background-color: #e6ffed;
+      border: 1px solid #79d18a;
+      color: #1f7a36;
+    }
+    .error {
+      background-color: #ffe6e6;
+      border: 1px solid #ff6b6b;
+      color: #a94442;
+    }
+    .links {
+      margin-top: 24px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Member Login</h1>
+  <form id="loginForm">
+    <div>
+      <label for="memberCode">Member Code</label>
+      <input type="text" id="memberCode" name="memberCode" required />
+    </div>
+    <div>
+      <label for="mobile">Mobile</label>
+      <input type="tel" id="mobile" name="mobile" required />
+    </div>
+    <button type="submit">Login</button>
+  </form>
+  <div id="message" class="message"></div>
+
+  <div class="links">
+    <a href="/join.html">Need to join? Register here</a>
+  </div>
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const messageEl = document.getElementById('message');
+
+    function showMessage(text, type) {
+      messageEl.textContent = text;
+      messageEl.className = `message ${type}`;
+      messageEl.style.display = 'block';
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      messageEl.style.display = 'none';
+
+      const data = {
+        memberCode: form.memberCode.value.trim(),
+        mobile: form.mobile.value.trim(),
+      };
+
+      try {
+        const response = await fetch('/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+        if (!response.ok) {
+          throw new Error(result.error || 'Login failed');
+        }
+
+        showMessage('Login successful. Redirecting...', 'success');
+        setTimeout(() => {
+          window.location.href = '/dashboard.html';
+        }, 600);
+      } catch (error) {
+        showMessage(error.message, 'error');
+      }
+    });
+  </script>
+</body>
+</html>
